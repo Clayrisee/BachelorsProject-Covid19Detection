@@ -15,7 +15,7 @@ class CovidDataModule(DataModuleBase):
         self.map_size = cfg['model']['map_size']
 
         self.train_transforms = transforms.Compose([
-            transforms.RandomRotation(cfg['dataset']['rotation_degree']),
+            transforms.RandomRotation(cfg['dataset']['rotation_range']),
             transforms.Resize(cfg['model']['input_size']),
             transforms.ToTensor(),
             transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['std'])
