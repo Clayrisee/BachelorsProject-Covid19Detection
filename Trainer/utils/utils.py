@@ -20,13 +20,13 @@ def get_device(cfg):
     Returns:
         torch.device
     """
-    device = None
+    result_device = None
     if cfg['device'] == 'cpu':
-        device = device("cpu")
+        result_device = device("cpu")
     elif cfg['device'] == 'cuda:0':
-        device = device("cuda:0")
+        result_device = device("cuda:0")
     elif cfg['device'] == 'cuda:1':
-        device = device("cuda:1")
+        result_device = device("cuda:1")
     else:
         raise NotImplementedError
-    return device
+    return result_device
