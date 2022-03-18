@@ -1,0 +1,36 @@
+output_dir: 'model_checkpoint/'
+device: '0'
+output_dir: "model_checkpoint/"
+device: 'cuda:0'
+dataset:
+  name: 'covid_dataset'
+  augmentation:
+    rotation_range: 10
+  train_root: 'dataset/covid_dataset/train'
+  val_root: 'dataset/covid_dataset/val'
+  test_root: 'dataset/covid_dataset/test'
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  
+model:
+  base: 'ensemble_convnext_vit'
+  pretrained: true
+  input_size: [224, 224]
+  num_classes: 4
+
+train:
+  batch_size: 64
+  optimizer: 'adam'
+  lr: 0.001
+  num_epochs: 100
+
+val:
+  batch_size: 64
+
+test:
+  batch_size: 256
+
+logger:
+  api_key: ""
+  workspace: ""
+  project_name: ""
