@@ -1,5 +1,6 @@
 import yaml
 from torch import device
+from torch import optim
 
 def read_cfg(cfg_file):
     """
@@ -30,3 +31,29 @@ def get_device(cfg):
     else:
         raise NotImplementedError
     return result_device
+
+def get_optimizer(cfg, network):
+    """ Get optimizer based on the configuration
+    Args:
+        cfg (dict): a dict of configuration
+        network: network to optimize
+    Returns:
+        optimizer 
+    """
+    optimizer = None
+    if cfg['train']['optimizer'] == 'adam':
+        optimizer = optim.Adam(network.parameters(), lr=cfg['train']['lr'])
+
+    elif cfg['train']['optimizer'] == 'adamw':
+        optimizer = optim.AdamW(network.parameters(), lr=cfg['train']['lr'])
+
+    elif cfg['train']['optimizer'] == 'sgd':
+        optimizer = optim.SGD(network.parameters(), lr=cfg['train']['lr'])
+
+    elif cfg['train']['optimizer'] == 'rmsprop':
+        optimizer = optim.RMSprop(network.parameters(), lr=cfg['train']['lr']) 
+
+    else:
+        raise NotImplementedError
+    
+    return optimizer
