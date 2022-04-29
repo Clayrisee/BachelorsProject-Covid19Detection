@@ -1,0 +1,9 @@
+torch
+torchvision
+timm
+opencv-contrib-python
+comet_ml
+pandas
+numpy
+Pillow
+sklearn
