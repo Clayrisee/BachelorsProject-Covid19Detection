@@ -39,7 +39,7 @@ class ClassificationMetrics:
         acc = accuracy_score(y_true=y_true, y_pred=y_pred)
         precision = precision_score(y_true= y_true, y_pred=y_pred, average=averages)
         recall = recall_score(y_true= y_true, y_pred=y_pred, average=averages)
-        f1 = f1_score(y=y_true, y_pred=y_pred, average=averages)
+        f1 = f1_score(y_true=y_true, y_pred=y_pred, average=averages)
         result_dict = {
             'precision':precision,
             'accuracy': acc,
