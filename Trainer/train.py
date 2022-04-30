@@ -1,6 +1,8 @@
 import os
-from comet_ml import Experiment
+from comet_ml import Artifact, Experiment
+import torch
 from data.covid_dataloader import CovidDataModule
+from utils.generate_hyperparameters import generate_hyperparameters
 from utils.utils import read_cfg, get_optimizer, get_device
 from models.models import create_model
 from trainer.Trainer import Trainer
@@ -9,26 +11,40 @@ from utils.callbacks import CustomCallback
 from utils.logger import get_logger
 import argparse
 import torch.nn as nn
+import pandas as pd
 
-
+def count_weighted(csv):
+    df = pd.read_csv(csv)
+    weight = list()
+    total_class = len(df.groupby('folder').count().filename)
+    total_files = len(df)
+    for total_files_in_class in df.groupby('folder').count().filename:
+        # print(total_files_in_class)
+        # print(total_files)
+        w = total_files / (total_class * total_files_in_class)
+        # print(w)
+        weight.append(w)
+    return torch.Tensor(weight)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Argument for train the model")
     parser.add_argument('-cfg', '--config', type=str, help="Path to config yaml file")
     args = parser.parse_args()
     cfg = read_cfg(cfg_file=args.config)
+    hyperparameters = generate_hyperparameters(cfg)
     LOG = get_logger(cfg['model']['base']) # create logger based on model name for Track each proses in console
 
     LOG.info("Training Process Start")
     logger = Experiment(api_key=cfg['logger']['api_key'], 
             project_name=cfg['logger']['project_name'],
             workspace=cfg['logger']['workspace']) # logger for track model in Comet ML
+    artifact = Artifact("Covid-19 Artifact", "Model")
     LOG.info("Comet Logger has successfully loaded.")
 
     device = get_device(cfg)
     LOG.info(f"{str(device)} has choosen.")
 
-    kwargs = dict(pretrained=cfg['model']['pretrained'], output_class=cfg['model']['output_class'])
+    kwargs = dict(pretrained=cfg['model']['pretrained'], output_class=cfg['model']['num_classes'])
     network = create_model(cfg['model']['base'], **kwargs)
     print(network)
     LOG.info(f"Network {cfg['model']['base']} succesfully loaded.")
@@ -44,8 +60,9 @@ if __name__ == "__main__":
         warmup_steps=50, 
         gamma=0.5)
     LOG.info(f"Scheduler has been defined.")
-
-    criterion = nn.CrossEntropyLoss()
+    weight = count_weighted(os.path.join(cfg.dataset.root_dir,cfg.dataset.train_csv))
+    weight = weight.to(device)
+    criterion = nn.CrossEntropyLoss(weight=weight)
     LOG.info(f"Criterion has been defined")
 
     dataset = CovidDataModule(cfg)
@@ -58,6 +75,16 @@ if __name__ == "__main__":
     )
     custom_cb = CustomCallback(**cb_config)
     LOG.info(f"Custom CB Initialized")
+    logger.log_parameters(hyperparameters)
     trainer = Trainer(cfg, network, optimizer, criterion, dataset, device, callbacks=custom_cb, lr_scheduler=lr_scheduler, logger=logger)
 
     trainer.train()
+    best_model_path = os.path.join(cfg['output_dir'], 'best_model.pth')
+    best_optimizer_path = os.path.join(cfg['output_dir'], 'best_optimizer.pth')
+    final_model_path = os.path.join(cfg['output_dir'], 'final_model.pth')
+    final_optimizer_path = os.path.join(cfg['output_dir'], 'final_optimizer.pth')
+    artifact.add(best_model_path)
+    artifact.add(best_optimizer_path)
+    artifact.add(final_model_path)
+    artifact.add(final_optimizer_path)
+    logger.log_artifact(artifact=artifact)
