@@ -2,3 +2,4 @@ covid_dataset/
 __pycache__/
 model_checkpoint/
 nohup.out
+/covid_dataset

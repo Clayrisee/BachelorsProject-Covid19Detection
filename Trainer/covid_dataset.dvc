@@ -1,0 +1,5 @@
+outs:
+- md5: 3be24a7f4d27be70448d4400446f597d.dir
+  size: 806952602
+  nfiles: 42334
+  path: covid_dataset
