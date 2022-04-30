@@ -49,7 +49,7 @@ class EnsembleEfficientNetViT(nn.Module):
         for param in self.feature_extract_1.parameters():
             param.requires_grad = False
         
-        for param_2 in self.feature_extract_2.paramaters():
+        for param_2 in self.feature_extract_2.parameters():
             param_2.requires_grad = False
     
     def unfreeze(self):
@@ -58,5 +58,5 @@ class EnsembleEfficientNetViT(nn.Module):
         """
         for param in self.feature_extract_1.parameters():
             param.requires_grad = True
-        for param_2 in self.feature_extract_2.paramaters():
+        for param_2 in self.feature_extract_2.parameters():
             param_2.requires_grad = True
