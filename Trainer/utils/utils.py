@@ -1,7 +1,7 @@
 import yaml
 from torch import device
 from torch import optim
-
+from easydict import EasyDict as edict
 def read_cfg(cfg_file):
     """
     Read configurations from yaml file
@@ -11,7 +11,7 @@ def read_cfg(cfg_file):
         (dict): configuration in dict
     """
     with open(cfg_file, 'r') as rf:
-        cfg = yaml.safe_load(rf)
+        cfg = edict(yaml.safe_load(rf))
         return cfg
 
 def get_device(cfg):
