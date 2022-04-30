@@ -4,6 +4,7 @@ from PIL import Image
 import pandas as pd
 from torch.utils.data import Dataset
 import os
+import torch
 
 class CovidDataset(Dataset):
     def __init__(self, root_dir, csv_file, transform=None):
@@ -20,11 +21,13 @@ class CovidDataset(Dataset):
         img_name = self.data.iloc[index, 0]
         format = self.data.iloc[index, 1].lower()
         folder = self.data.iloc[index, 2]
-        img_path = os.path.join(self.root_dir, folder, 'images', img_name, format)
+        img_name = f"{img_name}.{format}"
+        img_path = os.path.join(self.root_dir, folder, 'images', img_name)
 
-        img = Image.open(img_path)
-        label = self.data.iloc[index, -1].astype(np.float32)
-        label = np.expand_dims(label, axis=0)
+        img = Image.open(img_path).convert('RGB')
+        label = float(self.data.iloc[index, -1])
+        # print(label)
+        # label = np.expand_dims(label, axis=0)
         
         if self.transform:
             img = self.transform(img)
