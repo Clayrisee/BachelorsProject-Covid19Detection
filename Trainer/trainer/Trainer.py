@@ -41,6 +41,7 @@ class Trainer(BaseTrainer):
         self.network.train()
         loss = 0
         for i, (imgs, labels) in enumerate(self.trainloader):
+            labels = labels.type(torch.LongTensor) 
             imgs, labels = imgs.to(self.device), labels.to(self.device)
             preds = self.network(imgs)
             self.optimizer.zero_grad()
@@ -52,17 +53,18 @@ class Trainer(BaseTrainer):
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
 
-        epoch_loss = loss / len(self.dataset.train_set)
+        epoch_loss = loss / len(self.trainloader)
         if self.logger is not None:
             self.logger.log_metric("train_loss", epoch_loss, epoch=epoch)
 
         return epoch_loss
     
     def train(self):
+        self.network=self.network.to(self.device)
         self.network.freeze() # freeze feature extract.
         for epoch in range(self.cfg['train']['num_epochs']):
-            if epoch == 5:
-                self.network.unfreeze() # unfreeze feature extract after 5 epoch.
+            if epoch == 3:
+                self.network.unfreeze() # unfreeze feature extract after 3 epoch.
             print("="*80)
             print("Epoch: {}".format(epoch))
             train_loss = self.train_one_epoch(epoch)
@@ -90,19 +92,20 @@ class Trainer(BaseTrainer):
         self.network.eval()
         with torch.no_grad():
             for i, (imgs,labels) in enumerate(self.valloader):
+                labels = labels.type(torch.LongTensor) 
                 imgs, labels = imgs.to(self.device), labels.to(self.device)
                 preds = self.network(imgs)
                 loss = self.criterion(preds, labels)
                 # print("Batch val loss", loss)
                 val_loss += loss.item() * imgs.shape[0]
-                classification_metrics = self.eval_metrics(labels, preds)
+                classification_metrics = self.eval_metrics(labels, torch.argmax(preds, dim=1))
                 acc += classification_metrics['accuracy']
                 precision += classification_metrics['precision']
                 recall += classification_metrics['recall']
                 f1 += classification_metrics['f1_score']
                 # print classification_metrics
             # print(len(self.dataset.val_set))
-            total_val_dataset = len(self.dataset.val_set)
+            total_val_dataset = len(self.valloader)
             epoch_val_loss = loss / total_val_dataset
             epoch_accuracy = acc / total_val_dataset
             epoch_precision = precision / total_val_dataset
