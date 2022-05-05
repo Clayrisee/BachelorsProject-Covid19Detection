@@ -52,6 +52,7 @@ class Trainer(BaseTrainer):
 
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
+                self.logger.log_metric("learning_rate", self.lr_scheduler.get_lr())
 
         epoch_loss = loss / len(self.trainloader)
         if self.logger is not None:
@@ -63,7 +64,7 @@ class Trainer(BaseTrainer):
         self.network=self.network.to(self.device)
         self.network.freeze() # freeze feature extract.
         for epoch in range(self.cfg['train']['num_epochs']):
-            if epoch == 3:
+            if epoch == 2:
                 self.network.unfreeze() # unfreeze feature extract after 3 epoch.
             print("="*80)
             print("Epoch: {}".format(epoch))

@@ -58,7 +58,7 @@ class CovidDataModule(DataModuleBase):
             shuffle=True,
             num_workers=2
         )
-        self.test_dl = DataLoader(self.test_set,  pin_memory=True,, **kwargs)
+        self.test_dl = DataLoader(self.test_set,  pin_memory=True, **kwargs)
         return self.test_dl
 
 # class CovidDataModule(DataModuleBase):
