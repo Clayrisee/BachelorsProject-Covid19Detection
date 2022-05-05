@@ -53,12 +53,13 @@ if __name__ == "__main__":
     LOG.info(f"Optimizer has been defined.")
 
     lr_scheduler = CosineAnealingWithWarmUp(optimizer, 
-        first_cycle_steps=300, 
-        cycle_mult=1.0,
-        max_lr=0.1, 
-        min_lr=0.001, 
-        warmup_steps=50, 
+        first_cycle_steps=250, 
+        cycle_mult=0.5,
+        max_lr=1e-2, 
+        min_lr=cfg['train']['lr'], 
+        warmup_steps=100, 
         gamma=0.5)
+
     LOG.info(f"Scheduler has been defined.")
     weight = count_weighted(os.path.join(cfg.dataset.root_dir,cfg.dataset.train_csv))
     weight = weight.to(device)
