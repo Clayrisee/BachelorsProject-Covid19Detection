@@ -1,0 +1,39 @@
+output_dir: "gdrive/MyDrive/Skripsi/Model/convnext"
+device: 'cuda:0'
+dataset:
+  root_dir: 'covid_dataset'
+  augmentation:
+    rotation_range: 10
+  train_csv: 'train.csv'
+  val_csv: 'val.csv'
+  test_csv: 'test.csv'
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  
+model:
+  base: 'convnext'
+  pretrained: true
+  input_size: [224, 224]
+  num_classes: 4
+
+train:
+  batch_size: 64
+  optimizer: 'adam'
+  lr: 0.00001
+  num_epochs: 100
+
+val:
+  batch_size: 64
+
+test:
+  batch_size: 256
+
+custom_cb:
+  patience: 15
+  metric: 'f1_score'
+  mode: 'max'
+
+logger:
+  api_key: "sISf602PGYRO5TJbcsUMCn5t2"
+  workspace: "clayrisee"
+  project_name: "covid_19_detection"
