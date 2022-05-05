@@ -39,7 +39,7 @@ class Trainer(BaseTrainer):
     
     def train_one_epoch(self, epoch):
         self.network.train()
-        loss = 0
+        loss = 0.0
         for i, (imgs, labels) in enumerate(self.trainloader):
             labels = labels.type(torch.LongTensor) 
             imgs, labels = imgs.to(self.device), labels.to(self.device)
@@ -88,7 +88,7 @@ class Trainer(BaseTrainer):
         self.save_final_model()
     
     def validate_one_epoch(self, epoch):
-        acc = precision = recall = f1 = val_loss = 0
+        acc = precision = recall = f1 = val_loss = 0.0
         self.network.eval()
         with torch.no_grad():
             for i, (imgs,labels) in enumerate(self.valloader):
