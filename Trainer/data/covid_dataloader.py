@@ -40,7 +40,7 @@ class CovidDataModule(DataModuleBase):
             shuffle=True,
             num_workers=2
         )
-        self.train_dl = DataLoader(self.train_set, **kwargs)
+        self.train_dl = DataLoader(self.train_set, pin_memory=True,**kwargs)
         return self.train_dl
 
     def val_dataloader(self):
@@ -49,7 +49,7 @@ class CovidDataModule(DataModuleBase):
             shuffle=True,
             num_workers=2
         )
-        self.val_dl = DataLoader(self.val_set, **kwargs)
+        self.val_dl = DataLoader(self.val_set,  pin_memory=True, **kwargs)
         return self.val_dl
 
     def test_dataloader(self):
@@ -58,7 +58,7 @@ class CovidDataModule(DataModuleBase):
             shuffle=True,
             num_workers=2
         )
-        self.test_dl = DataLoader(self.test_set, **kwargs)
+        self.test_dl = DataLoader(self.test_set,  pin_memory=True,, **kwargs)
         return self.test_dl
 
 # class CovidDataModule(DataModuleBase):
