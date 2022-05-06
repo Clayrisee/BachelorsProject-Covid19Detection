@@ -81,6 +81,6 @@ class CustomCallback:
             self.trace_func(f'Val {self.metric} got best scored ({self.metric_min:.6f} --> {score:.6f}). Saving Model..')
         if not os.path.exists(self.checkpoint_path):
             os.makedirs(self.checkpoint_path)
-        torch.save(model, os.path.join(self.checkpoint_path, 'best_model.pth'))
-        torch.save(optimizer, os.path.join(self.checkpoint_path, 'best_optimizer.pth'))
+        torch.save(model.state_dict(), os.path.join(self.checkpoint_path, 'best_model.pth'))
+        torch.save(optimizer.state_dict(), os.path.join(self.checkpoint_path, 'best_optimizer.pth'))
         self.metric_min = score
