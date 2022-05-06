@@ -2,8 +2,7 @@ import os
 from comet_ml import Artifact, Experiment
 import torch
 from data.covid_dataloader import CovidDataModule
-from utils.generate_hyperparameters import generate_hyperparameters
-from utils.utils import read_cfg, get_optimizer, get_device
+from utils.utils import generate_model_config, read_cfg, get_optimizer, get_device, generate_hyperparameters
 from models.models import create_model
 from trainer.Trainer import Trainer
 from utils.schedulers import CosineAnealingWithWarmUp
@@ -77,6 +76,18 @@ if __name__ == "__main__":
     custom_cb = CustomCallback(**cb_config)
     LOG.info(f"Custom CB Initialized")
     logger.log_parameters(hyperparameters)
+    LOG.info("Parameters has been Logged")
+    generate_model_config(cfg)
+    LOG.info("Model config has been generated")
+
+    if cfg['model']['pretrained_path'] is not None:
+        net_state_dict = torch.load(cfg['model']['pretrained_path'], map_location=device)
+        network = network.load_state_dict(state_dict=net_state_dict)
+    
+    if cfg['optimizer']['pretrained_path'] is not None:
+        opt_state_dict = torch.load(cfg['optimizer']['pretrained_path'], map_location=device)
+        optimizer = optimizer.load_state_dict(opt_state_dict)
+    
     trainer = Trainer(cfg, network, optimizer, criterion, dataset, device, callbacks=custom_cb, lr_scheduler=lr_scheduler, logger=logger)
 
     trainer.train()
@@ -84,8 +95,10 @@ if __name__ == "__main__":
     best_optimizer_path = os.path.join(cfg['output_dir'], 'best_optimizer.pth')
     final_model_path = os.path.join(cfg['output_dir'], 'final_model.pth')
     final_optimizer_path = os.path.join(cfg['output_dir'], 'final_optimizer.pth')
+    model_cfg_path = os.path.join(cfg['output_dir'], 'model-config.yaml')
     artifact.add(best_model_path)
     artifact.add(best_optimizer_path)
     artifact.add(final_model_path)
     artifact.add(final_optimizer_path)
+    artifact.add(model_cfg_path)
     logger.log_artifact(artifact=artifact)
