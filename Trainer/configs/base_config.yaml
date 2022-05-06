@@ -15,6 +15,10 @@ model:
   pretrained: true
   input_size: [224, 224]
   num_classes: 4
+  pretrained_path: None
+
+optimizer:
+  pretrained_path: None
 
 train:
   batch_size: 64
@@ -30,7 +34,7 @@ test:
 
 custom_cb:
   patience: 15
-  metric: 'f1_score'
+  metric: 'recall'
   mode: 'max'
 
 logger:
