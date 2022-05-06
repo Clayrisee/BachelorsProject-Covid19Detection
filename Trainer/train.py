@@ -80,13 +80,18 @@ if __name__ == "__main__":
     generate_model_config(cfg)
     LOG.info("Model config has been generated")
 
-    if cfg['model']['pretrained_path'] is not None:
-        net_state_dict = torch.load(cfg['model']['pretrained_path'], map_location=device)
-        network = network.load_state_dict(state_dict=net_state_dict)
-    
-    if cfg['optimizer']['pretrained_path'] is not None:
-        opt_state_dict = torch.load(cfg['optimizer']['pretrained_path'], map_location=device)
-        optimizer = optimizer.load_state_dict(opt_state_dict)
+    try:
+        if cfg['model']['pretrained_path'] is not None:
+            net_state_dict = torch.load(cfg['model']['pretrained_path'], map_location=device)
+            network = network.load_state_dict(state_dict=net_state_dict)
+        
+        if cfg['optimizer']['pretrained_path'] is not None:
+            opt_state_dict = torch.load(cfg['optimizer']['pretrained_path'], map_location=device)
+            optimizer = optimizer.load_state_dict(opt_state_dict)
+        
+        print("Pretrained has been loaded...")
+    except:
+        print("Pretrained Failed to Load.. Continues training process using weight from imageNet")
     
     trainer = Trainer(cfg, network, optimizer, criterion, dataset, device, callbacks=custom_cb, lr_scheduler=lr_scheduler, logger=logger)
 
