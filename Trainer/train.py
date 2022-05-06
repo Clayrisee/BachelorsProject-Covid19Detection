@@ -81,11 +81,11 @@ if __name__ == "__main__":
     LOG.info("Model config has been generated")
 
     try:
-        if cfg['model']['pretrained_path'] is not None:
+        if cfg['model']['pretrained_path'] != 'None':
             net_state_dict = torch.load(cfg['model']['pretrained_path'], map_location=device)
             network = network.load_state_dict(state_dict=net_state_dict)
         
-        if cfg['optimizer']['pretrained_path'] is not None:
+        if cfg['optimizer']['pretrained_path'] != 'None':
             opt_state_dict = torch.load(cfg['optimizer']['pretrained_path'], map_location=device)
             optimizer = optimizer.load_state_dict(opt_state_dict)
         

@@ -88,7 +88,7 @@ def generate_model_config(train_cfg:dict):
     model_config = {
         'model':train_cfg.model.base,
         'model_input': train_cfg.model.input_size[0],
-        'output_class': train_cfg.model,
+        'output_class': train_cfg.model.num_classes,
         'model_file': 'best_model.pth'
     }
     save_dir = train_cfg['output_dir']
@@ -98,4 +98,5 @@ def generate_model_config(train_cfg:dict):
     
     save_path = os.path.join(save_dir, 'model-config.yaml')
     with open(save_path, "w") as yaml_file:
-        yaml.safe_dump(model_config, yaml_file, default_flow_style=None, sort_keys=False, explicit_start=True)
+        # yaml.safe_dump(model_config, yaml_file, default_flow_style=None, sort_keys=False, explicit_start=True)
+        yaml.safe_dump(model_config, yaml_file, sort_keys=False, explicit_start=True, default_flow_style=None)
