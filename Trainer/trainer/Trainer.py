@@ -27,13 +27,12 @@ class Trainer(BaseTrainer):
         self.optimizer.load_state_dict(state['optimizer'])
         self.network.load_state_dict(state['state_dict'])
 
-
-    def save_final_model(self):
+    def save_last_model(self, state:str):
         if not os.path.exists(self.cfg['output_dir']):
             os.makedirs(self.cfg['output_dir'])
         
-        model_saved_name = os.path.join(self.cfg['output_dir'], 'final_model.pth')
-        optimizer_saved_name = os.path.join(self.cfg['output_dir'], 'final_optimizer.pth')
+        model_saved_name = os.path.join(self.cfg['output_dir'], f'{state}_model.pth')
+        optimizer_saved_name = os.path.join(self.cfg['output_dir'], f'{state}_optimizer.pth')
         torch.save(self.network.state_dict(), model_saved_name)
         torch.save(self.optimizer.state_dict(), optimizer_saved_name)
     
@@ -85,8 +84,9 @@ class Trainer(BaseTrainer):
                 if self.callbacks.early_stop:
                     print('Custom Callback Triggered, Process Training Stopped!')
                     break
+            self.save_last_model(state="last") # for save model for each epoch
         
-        self.save_final_model()
+        self.save_last_model(state="final") # for save model after all model has been trained
     
     def validate_one_epoch(self, epoch):
         acc = precision = recall = f1 = val_loss = 0.0
