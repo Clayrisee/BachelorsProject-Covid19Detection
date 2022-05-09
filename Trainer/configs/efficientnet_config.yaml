@@ -1,0 +1,43 @@
+output_dir: "gdrive/MyDrive/Skripsi/Model/efficientnet_b0"
+device: 'cuda:0'
+dataset:
+  root_dir: 'covid_dataset'
+  augmentation:
+    rotation_range: 10
+  train_csv: 'train.csv'
+  val_csv: 'val.csv'
+  test_csv: 'test.csv'
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  
+model:
+  base: 'efficientnet_b0'
+  pretrained: true
+  input_size: [224, 224]
+  num_classes: 4
+  pretrained_path: None
+
+optimizer:
+  pretrained_path: None
+
+train:
+  batch_size: 32
+  optimizer: 'adam'
+  lr: 0.00001
+  num_epochs: 100
+
+val:
+  batch_size: 32
+
+test:
+  batch_size: 32
+
+custom_cb:
+  patience: 10
+  metric: 'recall'
+  mode: 'max'
+
+logger:
+  api_key: "sISf602PGYRO5TJbcsUMCn5t2"
+  workspace: "clayrisee"
+  project_name: "covid_19_detection"
