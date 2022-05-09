@@ -1,0 +1,2 @@
+precision,accuracy,recall,f1_score,model
+0.830190524138309,0.8225,0.8225,0.8225279089358764,vit

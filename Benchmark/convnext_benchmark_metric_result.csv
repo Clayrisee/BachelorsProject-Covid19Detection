@@ -1,0 +1,2 @@
+precision,accuracy,recall,f1_score,model
+0.961038961038961,0.96,0.96,0.9603122707756935,convnext
