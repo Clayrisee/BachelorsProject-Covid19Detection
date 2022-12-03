@@ -6,12 +6,14 @@ from torchvision import transforms
 
 
 class InferenceModel(nn.Module):
-    def __init__(self, input_size, backbone, output_class):
+    def __init__(self, input_size, backbone, output_class, device):
         super(InferenceModel, self).__init__()
         self.input_size = input_size
         self.network = timm.create_model(self._get_backbone_names(backbone=backbone), 
                             pretrained=False, num_classes=output_class)
         
+        self.device = device
+        self.network.to(device)
     
     def _get_backbone_names(self, backbone:str):
         backbone_dict = {
@@ -42,4 +44,5 @@ class InferenceModel(nn.Module):
     def predict(self, input_img):
         preprocess_img = torch.unsqueeze(self.preprocessing_img(input_img), dim=0)
         # print(preprocess_img.shape)
+        preprocess_img = preprocess_img.to(self.device)
         return self(preprocess_img)

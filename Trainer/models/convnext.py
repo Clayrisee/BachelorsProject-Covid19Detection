@@ -3,9 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ConvNext(nn.Module):
-    """
-    Ensemble 2 SOTA Model which are ConvNext and Vision Transformer that has best accuracy at ImageNet Dataset.
-    """
     def __init__(self, pretrained=True, output_class=4):
         """
         Init Model Layer using timm package.

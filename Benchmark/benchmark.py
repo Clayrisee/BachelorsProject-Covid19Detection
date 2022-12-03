@@ -9,51 +9,42 @@ import torch
 from PIL import Image
 from benchmark_module.metrics import ClassificationMetrics
 import pandas as pd
-device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+import argparse
+import numpy as np
 
-def get_convnext_model():
-    cfg = edict(yaml.safe_load(open("models/convnext/model-config.yaml", "r")))
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Classification benchmark script")
+    parser.add_argument("--model_dir", required=True, type=str,
+                        help="path to model directory")
+    parser.add_argument("--dataset_dir", required=True, type=str,
+                        help="path to dataset directory")
+    args = parser.parse_args()
+    return args
+
+
+def get_model(model_dir: str):
+    device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+    cfg_path = os.path.join(model_dir, "model-config.yaml")
+    cfg = edict(yaml.safe_load(open(cfg_path, "r")))
     model_kwargs = dict(
     input_size= cfg.model_input,
     backbone=cfg.model,
-    output_class=cfg.output_class
+    output_class=cfg.output_class,
+    device = device
     )
     model = InferenceModel(**model_kwargs)
-    pretrained_path = os.path.join('models/convnext', cfg.model_file)
+    pretrained_path = os.path.join(model_dir, cfg.model_file)
     model.load_state_dict(torch.load(pretrained_path, map_location=device))
     return model
 
-def get_vit_model():
-    cfg = edict(yaml.safe_load(open("models/vit/model-config.yaml", "r")))
-    model_kwargs = dict(
-    input_size= cfg.model_input,
-    backbone=cfg.model,
-    output_class=cfg.output_class
-    )
-    model = InferenceModel(**model_kwargs)
-    pretrained_path = os.path.join('models/vit', cfg.model_file)
-    model.load_state_dict(torch.load(pretrained_path, map_location=device))
-    return model
 
-def get_efficientnet_b0_model():
-    cfg = edict(yaml.safe_load(open("models/efficientnet/model-config.yaml", "r")))
-    model_kwargs = dict(
-    input_size= cfg.model_input,
-    backbone=cfg.model,
-    output_class=cfg.output_class
-    )
-    model = InferenceModel(**model_kwargs)
-    pretrained_path = os.path.join('models/efficientnet', cfg.model_file)
-    model.load_state_dict(torch.load(pretrained_path, map_location=device))
-    return model
-
-def get_prediction_model(benchmark_df:pd.DataFrame, model) -> torch.Tensor:
+def get_prediction_model(benchmark_df:pd.DataFrame, model):
     list_prediction = list()
     list_conf = list()
-    # model = model.to(device)
     for _, row in benchmark_df.iterrows():
         img_path = os.path.join('covid_dataset', row['folder'], "images", f"{row['filename']}.{row['format'].lower()}")
-        # print(img_path)
         pil_img = Image.open(img_path).convert('RGB')
         predicts = torch.squeeze(model.predict(pil_img), dim=0)
         pred_label = int(torch.argmax(predicts))
@@ -61,33 +52,31 @@ def get_prediction_model(benchmark_df:pd.DataFrame, model) -> torch.Tensor:
         list_conf.append(predicts[pred_label].detach().float())
     return torch.Tensor(list_prediction), torch.Tensor(list_conf)
 
-if __name__ == "__main__":
-    print("--System Started--")
-    benchmark_df = pd.read_csv('covid_dataset/test.csv')
-    # print(benchmark_df['labels'])
+
+def get_dataset(dataset_path: str):
+    benchmark_df = pd.read_csv(os.path.join(dataset_path, "test.csv"))
     gt_label = torch.Tensor(benchmark_df["labels"].values)
-    # print(gt_label)
-    metric = ClassificationMetrics()
-    # convnext_model = get_convnext_model()
-    vit_model = get_vit_model()
-    print("Model Loaded")
-    # effnet_b0_model = get_efficientnet_b0_model()
-    print("Get Prediction...")
-    pred_label, pred_conf = get_prediction_model(benchmark_df, vit_model)
-    print("Get Result Metric..")
-    result_metric = metric(gt_label, pred_label)
-    result_metric['model'] = 'vit'
-    print(result_metric)
-    result_pred_df = pd.DataFrame({'ground_truth': gt_label, 
-    'pred_label':pred_label.cpu().detach().numpy(), 
-    'pred_conf':pred_conf.cpu().detach().numpy()})
-    result_df = pd.DataFrame(result_metric, index=[0])
-    # result_df.to_csv("efficientnet_benchmark_metric_result.csv", index=False)
-    # result_pred_df.to_csv("efficientnet_benchmark_result.csv", index=False)
+    return benchmark_df, gt_label
 
-    # result_df.to_csv("convnext_benchmark_metric_result.csv", index=False)
-    # result_pred_df.to_csv("convnext_benchmark_result.csv", index=False)
 
-    result_df.to_csv("vit_benchmark_metric_result.csv", index=False)
-    result_pred_df.to_csv("vit_benchmark_result.csv", index=False)
-    print("--System All Green--")
+def classification_report(y_true: torch.Tensor, y_pred: torch.Tensor) -> pd.DataFrame:
+    cls_metrics = ClassificationMetrics()
+    result_dict = cls_metrics(y_true, y_pred)
+    result_df = pd.DataFrame(result_dict, index=[0])
+    print(result_df)
+    return result_df
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    benchmark_df, gt_label = get_dataset(args.dataset_dir)
+    model = get_model(args.model_dir)
+    pred_label, pred_conf = get_prediction_model(benchmark_df, model)
+    cls_result_df = classification_report(gt_label, pred_label)
+    cls_result_df.to_csv("classification_metrics_report.csv", index=False)
+    result_pred_df = pd.DataFrame({
+    'pred_label':pred_label.detach().cpu().numpy(), 
+    'pred_conf':pred_conf.detach().cpu().numpy()})
+    # print(result_pred_df.head())
+    final_benchmark_df = pd.concat([benchmark_df, result_pred_df], axis=1)
+    final_benchmark_df.to_csv("final_result_pred.csv", index=False)

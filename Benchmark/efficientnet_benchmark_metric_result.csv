@@ -1,2 +1,0 @@
-precision,accuracy,recall,f1_score,model
-0.2064703744093057,0.26,0.26,0.12011146708119277,efficientnet_b0
